@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:equatable/equatable.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:push_app/domain/entities/push_message.dart';
 import 'package:push_app/firebase_options.dart';
 
 part 'notifications_event.dart';
@@ -60,6 +63,19 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
 
     if (message.notification == null) return;
     print('Message also contained a notification: ${message.notification}');
+
+    final notification = PushMessage(
+        messageId:
+            message.messageId?.replaceAll(':', '').replaceAll('%', '') ?? '',
+        title: message.notification!.title ?? '',
+        body: message.notification!.body ?? '',
+        sentDate: message.sentTime ?? DateTime.now(),
+        data: message.data,
+        imageUrl: Platform.isAndroid
+            ? message.notification!.android?.imageUrl
+            : message.notification!.apple?.imageUrl);
+
+    print(notification);
   }
 
   void _onForegroundMessage() {
