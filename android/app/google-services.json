@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "799863385712",
+    "project_id": "flutter-projects-6150b",
+    "storage_bucket": "flutter-projects-6150b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:799863385712:android:aebc5475c849a7e4a6ceb5",
+        "android_client_info": {
+          "package_name": "com.dcavadiam.push_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZZwa6qGQ4rlvVoVfmHrJEGms3hknUhhE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
