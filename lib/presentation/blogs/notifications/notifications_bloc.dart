@@ -4,8 +4,6 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:push_app/config/local_notifications/local_notifications.dart';
-
 import 'package:push_app/domain/entities/push_message.dart';
 import 'package:push_app/firebase_options.dart';
 
@@ -17,17 +15,24 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // make sure you call `initializeApp` before using other Firebase services.
   await Firebase.initializeApp();
 
-  print("Handling a background message: ${message.messageId}");
+  // print("Handling a background message: ${message.messageId}");
 }
 
 class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
   int pushNumberId = 0;
 
-  NotificationsBloc() : super(const NotificationsState()) {
-    on<NotificationStatusChanged>(_notificationStatusChanged);
+  final Future<void> Function()? requestLocalNotificationPermissions;
+  final void Function(
+      {required int id,
+      String? title,
+      String? body,
+      String? data})? showLocalNotification;
 
-    //TODO 3: Create listener # _onPushMessageReceived
+  NotificationsBloc(
+      {this.showLocalNotification, this.requestLocalNotificationPermissions})
+      : super(const NotificationsState()) {
+    on<NotificationStatusChanged>(_notificationStatusChanged);
     on<NotificationReceived>(_onPushMessageReceived);
 
     //Verificar estado de las notificaciones
@@ -69,11 +74,11 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   }
 
   void handleRemoteMessage(RemoteMessage message) {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
+    // print('Got a message whilst in the foreground!');
+    // print('Message data: ${message.data}');
 
     if (message.notification == null) return;
-    print('Message also contained a notification: ${message.notification}');
+    // print('Message also contained a notification: ${message.notification}');
 
     final notification = PushMessage(
         messageId:
@@ -86,12 +91,14 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
             ? message.notification!.android?.imageUrl
             : message.notification!.apple?.imageUrl);
 
-    LocalNotifications.showLocalNotification(
-      id: ++pushNumberId,
-      body: notification.body,
-      data: notification.data.toString(),
-      title: notification.title,
-    );
+    if (showLocalNotification != null) {
+      showLocalNotification!(
+        id: ++pushNumberId,
+        body: notification.body,
+        data: notification.data.toString(),
+        title: notification.title,
+      );
+    }
     add(NotificationReceived(notification));
   }
 
@@ -111,8 +118,10 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     );
 
     // Solicitar permiso a las local notifications
-    await LocalNotifications.requestPermissionLocalNotifications();
-
+    if (requestLocalNotificationPermissions != null) {
+      await requestLocalNotificationPermissions!();
+      // await LocalNotifications.requestPermissionLocalNotifications();
+    }
     add(NotificationStatusChanged(settings.authorizationStatus));
   }
 
